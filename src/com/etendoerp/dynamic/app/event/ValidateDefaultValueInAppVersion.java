@@ -32,16 +32,16 @@ public class ValidateDefaultValueInAppVersion extends EntityPersistenceEventObse
     if (!isValidEvent(event)) {
       return;
     }
-    final DynamicAppVersion bpDocument = (DynamicAppVersion) event.getTargetInstance();
-    existsOtherRecord(bpDocument);
+    final DynamicAppVersion appVersion = (DynamicAppVersion) event.getTargetInstance();
+    existsOtherRecord(appVersion);
   }
 
   public void onSave(@Observes EntityNewEvent event) {
     if (!isValidEvent(event)) {
       return;
     }
-    final DynamicAppVersion bpDocument = (DynamicAppVersion) event.getTargetInstance();
-    existsOtherRecord(bpDocument);
+    final DynamicAppVersion appVersion = (DynamicAppVersion) event.getTargetInstance();
+    existsOtherRecord(appVersion);
   }
 
   private void existsOtherRecord(DynamicAppVersion appVersion) {
@@ -52,7 +52,7 @@ public class ValidateDefaultValueInAppVersion extends EntityPersistenceEventObse
       cAppVersion.add(Restrictions.ne(DynamicAppVersion.PROPERTY_ID, appVersion.getId()));
       cAppVersion.setMaxResults(1);
       if (cAppVersion.uniqueResult() != null) {
-        throw new OBException(OBMessageUtils.messageBD("ETINTER_Exists_Other_Record"));
+        throw new OBException(OBMessageUtils.messageBD("ETDAPP_ExistsOtherRecordAsDefault"));
       }
     }
   }
