@@ -44,6 +44,7 @@ public class ValidateAppConfigurationByRole extends EntityPersistenceEventObserv
     OBCriteria<DynamicRoleApp> cRoleApp = OBDal.getInstance().createCriteria(DynamicRoleApp.class);
     cRoleApp.add(Restrictions.eq(DynamicRoleApp.PROPERTY_ETDAPPAPP, roleApp.getEtdappApp()));
     cRoleApp.add(Restrictions.ne(DynamicRoleApp.PROPERTY_ID, roleApp.getId()));
+    cRoleApp.add(Restrictions.eq(DynamicRoleApp.PROPERTY_ROLE, roleApp.getRole()));
     cRoleApp.setMaxResults(1);
     if (cRoleApp.uniqueResult() != null) {
       throw new OBException(OBMessageUtils.messageBD("ETDAPP_ExistsAppForRole"));
