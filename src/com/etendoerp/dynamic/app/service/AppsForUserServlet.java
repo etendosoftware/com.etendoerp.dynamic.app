@@ -68,7 +68,9 @@ public class AppsForUserServlet extends BaseWebService {
             roleApp.getEtdappApp());
         roleAppJson.put("etdappAppVersion", version.getId());
         roleAppJson.put("etdappAppVersionName", version.getName());
-
+        if (version.isDevelopment()) {
+          roleAppJson.put("etdappAppVersionIsDev", version.isDevelopment());
+        }
         String strBaseDesign = DalContextListener.getServletContext().getRealPath("") + "src-loc/design/";
         String strDirectory = roleApp.getEtdappApp().getDirectoryLocation();
         String strFileName = version.getFileName();
