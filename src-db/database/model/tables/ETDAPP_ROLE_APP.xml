@@ -45,21 +45,21 @@
         <default/>
         <onCreateDefault/>
       </column>
-      <foreign-key foreignTable="AD_ORG" name="ETDAPP_AD_ORG">
-        <reference local="AD_ORG_ID" foreign="AD_ORG_ID"/>
-      </foreign-key>
-      <foreign-key foreignTable="ETDAPP_APP" name="ETDAPP_APP">
-        <reference local="ETDAPP_APP_ID" foreign="ETDAPP_APP_ID"/>
-      </foreign-key>
       <foreign-key foreignTable="ETDAPP_APP_VERSION" name="ETDAPP_APP_VERSION">
         <reference local="ETDAPP_APP_VERSION_ID" foreign="ETDAPP_APP_VERSION_ID"/>
       </foreign-key>
       <foreign-key foreignTable="AD_ROLE" name="ETDAPP_ROLE">
         <reference local="AD_ROLE_ID" foreign="AD_ROLE_ID"/>
       </foreign-key>
+      <foreign-key foreignTable="AD_ORG" name="ETDAPP_ROLE_AD_ORG">
+        <reference local="AD_ORG_ID" foreign="AD_ORG_ID"/>
+      </foreign-key>
+      <foreign-key foreignTable="ETDAPP_APP" name="ETDAPP_ROLE_APP">
+        <reference local="ETDAPP_APP_ID" foreign="ETDAPP_APP_ID"/>
+      </foreign-key>
       <foreign-key foreignTable="AD_CLIENT" name="ETDAPP_ROLE_APP_CLIENT">
         <reference local="AD_CLIENT_ID" foreign="AD_CLIENT_ID"/>
       </foreign-key>
-      <check name="ETDAPP_ISACTIVE"><![CDATA[ISACTIVE IN ('Y', 'N')]]></check>
+      <check name="ETDAPP_ROLE_ISACTIVE"><![CDATA[ISACTIVE IN ('Y', 'N')]]></check>
     </table>
   </database>
