@@ -53,20 +53,20 @@
         <default><![CDATA[N]]></default>
         <onCreateDefault/>
       </column>
-      <foreign-key foreignTable="AD_ORG" name="ETDAPP_AD_ORG">
-        <reference local="AD_ORG_ID" foreign="AD_ORG_ID"/>
-      </foreign-key>
-      <foreign-key foreignTable="ETDAPP_APP" name="ETDAPP_APP">
-        <reference local="ETDAPP_APP_ID" foreign="ETDAPP_APP_ID"/>
-      </foreign-key>
       <foreign-key foreignTable="AD_CLIENT" name="ETDAPP_APP_VERSION_AD_CLIENT">
         <reference local="AD_CLIENT_ID" foreign="AD_CLIENT_ID"/>
+      </foreign-key>
+      <foreign-key foreignTable="AD_ORG" name="ETDAPP_VERSION_AD_ORG">
+        <reference local="AD_ORG_ID" foreign="AD_ORG_ID"/>
+      </foreign-key>
+      <foreign-key foreignTable="ETDAPP_APP" name="ETDAPP_VERSION_APP">
+        <reference local="ETDAPP_APP_ID" foreign="ETDAPP_APP_ID"/>
       </foreign-key>
       <index name="ETDAPP_FKI_APP" unique="false">
         <index-column name="ETDAPP_APP_ID"/>
       </index>
-      <check name="ETDAPP_ISACTIVE"><![CDATA[ISACTIVE IN ('Y', 'N')]]></check>
       <check name="ETDAPP_ISDEFAULT"><![CDATA[ISDEFAULT IN ('Y', 'N')]]></check>
       <check name="ETDAPP_ISDEVELOPMENT"><![CDATA[ISDEVELOPMENT IN ('Y', 'N')]]></check>
+      <check name="ETDAPP_VERSION_ISACTIVE"><![CDATA[ISACTIVE IN ('Y', 'N')]]></check>
     </table>
   </database>
