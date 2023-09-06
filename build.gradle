@@ -1,0 +1,49 @@
+/**
+*   This file was generated automatically by the 'createModuleBuild' task.
+*   Created at: 2023-09-06T12:29:11.048313Z.
+*
+*   WARNING: Do not put your credentials directly in this file.
+*
+*/
+
+group          = "com.etendoerp"
+version        = "1.0.0"
+description    = "Dynamic App"
+ext.artifact   = "dynamic.app"
+ext.repository = "https://maven.pkg.github.com/etendosoftware/com.etendoerp.platform.extensions"
+
+configurations {
+    moduleDependencyContainer
+}
+
+publishing {
+    publications {
+        "com.etendoerp.dynamic.app"(MavenPublication) {
+            from components.java
+            groupId    = group
+            artifactId = artifact
+            version    = version
+        }
+    }
+    repositories {
+        maven {
+            url "https://maven.pkg.github.com/etendosoftware/com.etendoerp.platform.extensions"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.pkg.github.com/etendosoftware/com.etendoerp.platform.extensions"
+    }
+}
+
+/**
+* Declare Java dependencies using 'implementation'
+* Ex: implementation "com.sun.mail:javax.mail:1.6.2"
+*/
+dependencies {
+   implementation('com.etendoerp.platform:etendo-core:[22.1.0, 23.3.0)')
+
+}
