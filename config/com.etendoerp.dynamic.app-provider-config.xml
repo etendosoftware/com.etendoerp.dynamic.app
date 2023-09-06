@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<provider>
+  <bean>
+      <name>userApp</name>
+      <class>com.etendoerp.dynamic.app.service.AppsForUserServlet</class>
+      <singleton>true</singleton>
+  </bean>
+</provider>
