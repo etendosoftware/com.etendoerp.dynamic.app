@@ -1,0 +1,106 @@
+/**
+ * This script is used to create and build subapps for the dynamic app module.
+ */
+def yarnDir = {
+    def targetDir = project.hasProperty("pkg") ? project.property("pkg") : null
+    if (targetDir == null) {
+        throw new GradleException("Target module is required. Please provide the module package using -Ppkg=module-name")
+    }
+    def moduleDir = new File("${rootDir}/modules/${targetDir}")
+    if (!file(moduleDir).exists()) {
+        throw new GradleException("Module directory does not exist. Please create the module and export first.")
+    }
+    return moduleDir
+}
+
+/**
+ * Execute a command in the specified directory.
+ */
+def execYarn = { String workDir, String command ->
+    println "Working directory: ${workDir}"
+    println "Command: ${command}"
+    def shell = 'sh'
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        shell = 'cmd.exe'
+    }
+    exec {
+        workingDir workDir
+        commandLine shell, "-c", command
+    }
+}
+
+/**
+ * Create a new subapp for the module.
+ */
+task "subapp.create" {
+    finalizedBy "subapp.create.config"
+    group = "subapp"
+    description = "Create a new subapp for the module"
+    doLast {
+        def moduleDir = yarnDir()
+        if (file("${moduleDir}/subapp").exists()) {
+            throw new GradleException("Module already has a subapp")
+        }
+        execYarn moduleDir.toString(), 'npx react-native init subapp --template etendo-subapp-template-typescript --skip-install --skip-git-init'
+    }
+}
+
+/**
+ * Create a configuration file for the subapp.
+ */
+task "subapp.create.config" {
+    group = "subapp"
+    description = "Create a configuration file for the subapp. This task is automatically added to the subapp.create task."
+    doLast {
+        def targetDir = project.hasProperty("module") ? project.property("module") : null
+        def moduleDir = new File("${rootDir}/modules/${targetDir}")
+        def etendoConfig = new File("${moduleDir}/subapp/etendo.config.json")
+        def path = "../web/${targetDir}"
+        file(moduleDir).mkdirs()
+        etendoConfig.write("""{
+   "outputPath": "${path}",
+   "bundleFileName": "dist.js"
+}
+""")
+    }
+}
+
+task "subapp.build" {
+    group = "subapp"
+    description = "Build subapps for the module. This task is automatically added to the smartbuild task."
+    doLast {
+        def dirs = ['modules']
+        dirs.each { dir ->
+            fileTree(dir: dir, include: "**/subapp/package.json").each { pkgFile ->
+                {
+                    def subappDir = pkgFile.parent
+                    println("Building subapp in ${subappDir}")
+                    execYarn subappDir.toString(), 'yarn install'
+                    execYarn subappDir.toString(), 'yarn build'
+                }
+            }
+        }
+    }
+}
+
+task "subapp.dev" {
+    group = "subapp"
+    description = "Start development server for subapps"
+    dependsOn "rx.das.restart"
+    doLast {
+        def moduleDir = yarnDir()
+        def subappDir = "${moduleDir}/subapp"
+        if (!file("${subappDir}").exists()) {
+            throw new GradleException("Module does not have a subapp")
+        }
+        execYarn subappDir, 'yarn install'
+        execYarn subappDir, 'yarn build'
+        execYarn subappDir, 'yarn dev'
+    }
+}
+
+afterEvaluate {
+    tasks.named("smartbuild").configure { task ->
+        task.dependsOn("subapp.build")
+    }
+}
