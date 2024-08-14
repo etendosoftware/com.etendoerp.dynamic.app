@@ -2,9 +2,9 @@
  * This script is used to create and build subapps for the dynamic app module.
  */
 def yarnDir = {
-    def targetDir = project.hasProperty("module") ? project.property("module") : null
+    def targetDir = project.hasProperty("pkg") ? project.property("pkg") : null
     if (targetDir == null) {
-        throw new GradleException("Target module is required. Please provide the module name using -Pmodule=module-name")
+        throw new GradleException("Target module is required. Please provide the module package using -Ppkg=module-name")
     }
     def moduleDir = new File("${rootDir}/modules/${targetDir}")
     if (!file(moduleDir).exists()) {
@@ -86,6 +86,7 @@ task "subapp.build" {
 task "subapp.dev" {
     group = "subapp"
     description = "Start development server for subapps"
+    dependsOn "rx.das.restart"
     doLast {
         def moduleDir = yarnDir()
         def subappDir = "${moduleDir}/subapp"
