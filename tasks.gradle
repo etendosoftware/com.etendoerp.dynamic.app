@@ -41,7 +41,7 @@ task "subapp.create" {
         if (file("${moduleDir}/subapp").exists()) {
             throw new GradleException("Module already has a subapp")
         }
-        execYarn moduleDir.toString(), 'npx react-native init subapp --template etendo-subapp-template-typescript --skip-install --skip-git-init'
+        execYarn moduleDir.toString(), 'npx react-native init subapp --template etendo-subapp-data-template-typescript --skip-install --skip-git-init'
     }
 }
 
