@@ -68,6 +68,7 @@ task "subapp.create.config" {
 task "subapp.build" {
     group = "subapp"
     description = "Build subapps for the module. This task is automatically added to the smartbuild task."
+    dependsOn "copyCodeGenFiles"
     doLast {
         def dirs = ['modules']
         dirs.each { dir ->
@@ -86,7 +87,7 @@ task "subapp.build" {
 task "subapp.dev" {
     group = "subapp"
     description = "Start development server for subapps"
-    dependsOn "rx.das.restart"
+    dependsOn "copyCodeGenFiles"
     doLast {
         def moduleDir = yarnDir()
         def subappDir = "${moduleDir}/subapp"
@@ -99,8 +100,90 @@ task "subapp.dev" {
     }
 }
 
-afterEvaluate {
-    tasks.named("smartbuild").configure { task ->
-        task.dependsOn("subapp.build")
+configurations {
+    codegen
+}
+
+
+task downloadCodeGenJar {
+    doLast {
+        def outputDir = file("${buildDir}/dynapp/libs")
+        def codegenDependency = "com.etendorx:generate-entities:${project.ext.ETENDORX_VERSION}"
+        def dependency = dependencies.create(codegenDependency)
+        def configuration = configurations.detachedConfiguration(dependency)
+        configuration.resolve()
+        configuration.files.each { file ->
+            copy {
+                from file
+                into outputDir
+                rename { 'app.jar' }
+            }
+        }
+    }
+}
+
+task generateGradlePropertiesFile {
+    def gradlePropertiesFile = file("${buildDir}/dynapp/gradle.properties")
+    def dbHost = project.hasProperty("bbdd.host") ? project.property("bbdd.host") : "localhost"
+    def dbPort = project.property("bbdd.port") ?: "5432"
+    def dbSid = project.property("bbdd.sid") ?: "etendo"
+
+    doLast {
+        // Genera el contenido del archivo gradle.properties
+        gradlePropertiesFile.parentFile.mkdirs()
+        gradlePropertiesFile.text = """
+            bbdd.rdbms=POSTGRE
+            bbdd.driver=org.postgresql.Driver
+            bbdd.url=jdbc:postgresql://${dbHost}:${dbPort}
+            bbdd.sid=${dbSid}
+            bbdd.systemUser=postgres
+            bbdd.systemPassword=syspass
+            bbdd.user=tad
+            bbdd.password=tad
+            bbdd.sessionConfig=select update_dateFormat('DD-MM-YYYY')
+            rx.generateCode=true
+        """.stripIndent()
+    }
+
+    outputs.file(gradlePropertiesFile)
+}
+
+task runCodeGenJar(type: Exec) {
+    dependsOn "downloadCodeGenJar", "generateGradlePropertiesFile"
+
+    workingDir "${buildDir}/dynapp"
+    commandLine 'java', '-jar', 'libs/app.jar'
+
+    inputs.file(file("${buildDir}/dynapp/gradle.properties"))
+    outputs.upToDateWhen { false }
+}
+
+task copyCodeGenFiles {
+    dependsOn "runCodeGenJar"
+
+    doLast {
+        if(!project.hasProperty("pkg")) {
+            return
+        }
+        def sourceRootDir = file("${buildDir}/dynapp/null/")
+        sourceRootDir.eachDir { moduleDir ->
+            println "Copying codegen files for ${moduleDir}"
+            def sourceDataGenDir = file("${moduleDir}/lib/data_gen")
+            if (sourceDataGenDir.exists()) {
+                def module = project.property("pkg")
+                def subappDir = file("./modules/${module}/subapp")
+                if (subappDir.exists()) {
+                    def destinationDir = file("${subappDir}/src/lib/data_gen")
+                    if (destinationDir.exists()) {
+                        destinationDir.deleteDir()
+                    }
+                    copy {
+                        from sourceDataGenDir
+                        into destinationDir
+                    }
+                    println "Copied ${sourceDataGenDir} to ${destinationDir}"
+                }
+            }
+        }
     }
 }
