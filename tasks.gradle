@@ -129,7 +129,6 @@ task generateGradlePropertiesFile {
     def dbSid = project.property("bbdd.sid") ?: "etendo"
 
     doLast {
-        // Genera el contenido del archivo gradle.properties
         gradlePropertiesFile.parentFile.mkdirs()
         gradlePropertiesFile.text = """
             bbdd.rdbms=POSTGRE
