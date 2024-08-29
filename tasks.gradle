@@ -125,8 +125,8 @@ task downloadCodeGenJar {
 task generateGradlePropertiesFile {
     def gradlePropertiesFile = file("${buildDir}/dynapp/gradle.properties")
     def dbHost = project.hasProperty("bbdd.host") ? project.property("bbdd.host") : "localhost"
-    def dbPort = project.property("bbdd.port") ?: "5432"
-    def dbSid = project.property("bbdd.sid") ?: "etendo"
+    def dbPort = project.hasProperty("bbdd.port") ? project.property("bbdd.port") : "5432"
+    def dbSid = project.hasProperty("bbdd.sid") ? project.property("bbdd.sid") : "etendo"
 
     doLast {
         gradlePropertiesFile.parentFile.mkdirs()
