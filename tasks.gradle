@@ -41,7 +41,7 @@ task "subapp.create" {
         if (file("${moduleDir}/subapp").exists()) {
             throw new GradleException("Module already has a subapp")
         }
-        execYarn moduleDir.toString(), 'npx react-native init subapp --template etendo-subapp-data-template-typescript --skip-install --skip-git-init'
+        execYarn moduleDir.toString(), 'npx @react-native-community/cli init subapp --template etendo-subapp-data-template-typescript --skip-install --skip-git-init'
     }
 }
 
@@ -52,7 +52,7 @@ task "subapp.create.config" {
     group = "subapp"
     description = "Create a configuration file for the subapp. This task is automatically added to the subapp.create task."
     doLast {
-        def targetDir = project.hasProperty("module") ? project.property("module") : null
+        def targetDir = project.hasProperty("pkg") ? project.property("pkg") : null
         def moduleDir = new File("${rootDir}/modules/${targetDir}")
         def etendoConfig = new File("${moduleDir}/subapp/etendo.config.json")
         def path = "../web/${targetDir}"
