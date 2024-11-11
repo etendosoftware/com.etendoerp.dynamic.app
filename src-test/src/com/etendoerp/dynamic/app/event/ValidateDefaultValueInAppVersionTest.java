@@ -43,6 +43,11 @@ import com.etendoerp.dynamic.app.data.DynamicApp;
 @RunWith(MockitoJUnitRunner.class)
 public class ValidateDefaultValueInAppVersionTest {
 
+
+    private static final String DEFAULT_VERSION_EXISTS_MESSAGE = "Another default version exists";
+    private static final String MESSAGE_BD_KEY = "ETDAPP_ExistsOtherRecordAsDefault";
+    private static final String EXISTS_OTHER_RECORD_METHOD = "existsOtherRecord";
+
     private ValidateDefaultValueInAppVersion validator;
 
     @Mock
@@ -81,7 +86,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * Tests that no validation is performed when updating a non-default version.
      */
     @Test
-    public void testOnUpdate_NonDefaultVersion_NoValidationNeeded() {
+    public void testOnUpdateNonDefaultVersionNoValidationNeeded() {
         try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
             obDalMock.when(OBDal::getInstance).thenReturn(obDal);
 
@@ -95,7 +100,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * Tests that no validation is performed when saving a non-default version.
      */
     @Test
-    public void testOnSave_NonDefaultVersion_NoValidationNeeded() {
+    public void testOnSaveNonDefaultVersionNoValidationNeeded() {
         try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
             obDalMock.when(OBDal::getInstance).thenReturn(obDal);
 
@@ -106,18 +111,23 @@ public class ValidateDefaultValueInAppVersionTest {
     }
 
     /**
-     * Tests that no validation is needed when checking for other records
+     * Tests that no validation is performed when checking for other records
      * with a non-default version.
+     *
+     * <p>This test ensures that no criteria are created or evaluated when
+     * the version is not set as default.
+     *
+     * @throws Exception if there is an error accessing or invoking the method via reflection.
      */
     @Test
-    public void testExistsOtherRecord_NonDefaultVersion_NoValidationNeeded() throws Exception {
+    public void testExistsOtherRecordNonDefaultVersionNoValidationNeeded() throws Exception {
         when(appVersion.isDefault()).thenReturn(false);
 
         try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
             obDalMock.when(OBDal::getInstance).thenReturn(obDal);
 
             Method method = ValidateDefaultValueInAppVersion.class
-                .getDeclaredMethod("existsOtherRecord", DynamicAppVersion.class);
+                .getDeclaredMethod(EXISTS_OTHER_RECORD_METHOD, DynamicAppVersion.class);
             method.setAccessible(true);
             method.invoke(validator, appVersion);
 
@@ -126,11 +136,16 @@ public class ValidateDefaultValueInAppVersionTest {
     }
 
     /**
-     * Tests the scenario where a default version is being validated
-     * and no other default version exists.
+     * Tests the scenario where a default version is being validated,
+     * and no other default version exists in the system.
+     *
+     * <p>This test verifies that the validation proceeds without throwing an
+     * exception or triggering any messages when no other default version is found.
+     *
+     * @throws Exception if there is an error accessing or invoking the method via reflection.
      */
     @Test
-    public void testExistsOtherRecord_DefaultVersion_NoOtherDefaultExists() throws Exception {
+    public void testExistsOtherRecordDefaultVersionNoOtherDefaultExists() throws Exception {
         when(appVersion.isDefault()).thenReturn(true);
 
         try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class);
@@ -143,7 +158,7 @@ public class ValidateDefaultValueInAppVersionTest {
             when(criteria.uniqueResult()).thenReturn(null);
 
             Method method = ValidateDefaultValueInAppVersion.class
-                .getDeclaredMethod("existsOtherRecord", DynamicAppVersion.class);
+                .getDeclaredMethod(EXISTS_OTHER_RECORD_METHOD, DynamicAppVersion.class);
             method.setAccessible(true);
             method.invoke(validator, appVersion);
 
@@ -156,11 +171,16 @@ public class ValidateDefaultValueInAppVersionTest {
     }
 
     /**
-     * Tests the scenario where a default version is being validated
+     * Tests the scenario where a default version is being validated,
      * and another default version already exists.
+     *
+     * <p>This test verifies that an {@link OBException} is thrown with the correct
+     * message when another default version already exists in the system.
+     *
+     * @throws Exception if there is an error accessing or invoking the method via reflection.
      */
     @Test
-    public void testExistsOtherRecord_DefaultVersion_OtherDefaultExists() throws Exception {
+    public void testExistsOtherRecordDefaultVersionOtherDefaultExists() throws Exception {
         when(appVersion.isDefault()).thenReturn(true);
         DynamicAppVersion existingDefault = mock(DynamicAppVersion.class);
 
@@ -172,11 +192,11 @@ public class ValidateDefaultValueInAppVersionTest {
             when(criteria.add(any())).thenReturn(criteria);
             when(criteria.setMaxResults(anyInt())).thenReturn(criteria);
             when(criteria.uniqueResult()).thenReturn(existingDefault);
-            messageUtilsMock.when(() -> OBMessageUtils.messageBD("ETDAPP_ExistsOtherRecordAsDefault"))
-                .thenReturn("Another default version exists");
+            messageUtilsMock.when(() -> OBMessageUtils.messageBD(MESSAGE_BD_KEY))
+                .thenReturn(DEFAULT_VERSION_EXISTS_MESSAGE);
 
             Method method = ValidateDefaultValueInAppVersion.class
-                .getDeclaredMethod("existsOtherRecord", DynamicAppVersion.class);
+                .getDeclaredMethod(EXISTS_OTHER_RECORD_METHOD, DynamicAppVersion.class);
             method.setAccessible(true);
 
             InvocationTargetException exception = assertThrows(
@@ -185,14 +205,14 @@ public class ValidateDefaultValueInAppVersionTest {
             );
 
             assertTrue(exception.getCause() instanceof OBException);
-            assertEquals("Another default version exists", exception.getCause().getMessage());
+            assertEquals(DEFAULT_VERSION_EXISTS_MESSAGE, exception.getCause().getMessage());
 
             verify(obDal).createCriteria(DynamicAppVersion.class);
             verify(criteria, times(3)).add(any());
             verify(criteria).setMaxResults(1);
             verify(criteria).uniqueResult();
             messageUtilsMock.verify(
-                () -> OBMessageUtils.messageBD("ETDAPP_ExistsOtherRecordAsDefault"),
+                () -> OBMessageUtils.messageBD(MESSAGE_BD_KEY),
                 times(1)
             );
         }
@@ -201,9 +221,11 @@ public class ValidateDefaultValueInAppVersionTest {
     /**
      * Tests that the correct restrictions are added when validating
      * a default version.
+     *
+     * @throws Exception if there is an error accessing or invoking the method via reflection.
      */
     @Test
-    public void testExistsOtherRecord_DefaultVersion_VerifyRestrictions() throws Exception {
+    public void testExistsOtherRecordDefaultVersionVerifyRestrictions() throws Exception {
         when(appVersion.isDefault()).thenReturn(true);
         when(appVersion.getId()).thenReturn("testId");
         when(appVersion.getEtdappApp()).thenReturn(app);
@@ -216,7 +238,7 @@ public class ValidateDefaultValueInAppVersionTest {
             when(criteria.uniqueResult()).thenReturn(null);
 
             Method method = ValidateDefaultValueInAppVersion.class
-                .getDeclaredMethod("existsOtherRecord", DynamicAppVersion.class);
+                .getDeclaredMethod(EXISTS_OTHER_RECORD_METHOD, DynamicAppVersion.class);
             method.setAccessible(true);
             method.invoke(validator, appVersion);
 
@@ -232,7 +254,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * Tests onSave with invalid event using Mockito inline
      */
     @Test
-    public void testOnSave_InvalidEvent() {
+    public void testOnSaveInvalidEvent() {
         ValidateDefaultValueInAppVersion testValidator = new ValidateDefaultValueInAppVersion() {
             @Override
             protected boolean isValidEvent(EntityPersistenceEvent event) {
@@ -245,8 +267,11 @@ public class ValidateDefaultValueInAppVersionTest {
         verify(newEvent, never()).getTargetInstance();
     }
 
+    /**
+     * Verifies that {@code onUpdate} does not process an invalid event.
+     */
     @Test
-    public void testOnUpdate_InvalidEvent() {
+    public void testOnUpdateInvalidEvent() {
         ValidateDefaultValueInAppVersion testValidator = new ValidateDefaultValueInAppVersion() {
             @Override
             protected boolean isValidEvent(EntityPersistenceEvent event) {
@@ -287,7 +312,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * Ensures that getTargetInstance is never called.
      */
     @Test
-    public void testOnSave_ValidEvent_ExistingDefault() {
+    public void testOnSaveValidEventExistingDefault() {
         when(appVersion.isDefault()).thenReturn(true);
         DynamicAppVersion existingDefault = mock(DynamicAppVersion.class);
 
@@ -299,8 +324,8 @@ public class ValidateDefaultValueInAppVersionTest {
             when(criteria.add(any())).thenReturn(criteria);
             when(criteria.setMaxResults(anyInt())).thenReturn(criteria);
             when(criteria.uniqueResult()).thenReturn(existingDefault);
-            messageUtilsMock.when(() -> OBMessageUtils.messageBD("ETDAPP_ExistsOtherRecordAsDefault"))
-                .thenReturn("Another default version exists");
+            messageUtilsMock.when(() -> OBMessageUtils.messageBD(MESSAGE_BD_KEY))
+                .thenReturn(DEFAULT_VERSION_EXISTS_MESSAGE);
 
             validator = new ValidateDefaultValueInAppVersion() {
                 @Override
@@ -310,7 +335,7 @@ public class ValidateDefaultValueInAppVersionTest {
             };
 
             Exception exception = assertThrows(OBException.class, () -> validator.onSave(newEvent));
-            assertEquals("Another default version exists", exception.getMessage());
+            assertEquals(DEFAULT_VERSION_EXISTS_MESSAGE, exception.getMessage());
 
             verify(criteria, times(3)).add(any());
             verify(criteria).setMaxResults(1);
@@ -324,7 +349,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * verifies that it contains the expected entity name.
      */
     @Test
-    public void testOnUpdate_ValidEvent_ExistingDefault() {
+    public void testOnUpdateValidEventExistingDefault() {
         when(appVersion.isDefault()).thenReturn(true);
         DynamicAppVersion existingDefault = mock(DynamicAppVersion.class);
 
@@ -336,8 +361,8 @@ public class ValidateDefaultValueInAppVersionTest {
             when(criteria.add(any())).thenReturn(criteria);
             when(criteria.setMaxResults(anyInt())).thenReturn(criteria);
             when(criteria.uniqueResult()).thenReturn(existingDefault);
-            messageUtilsMock.when(() -> OBMessageUtils.messageBD("ETDAPP_ExistsOtherRecordAsDefault"))
-                .thenReturn("Another default version exists");
+            messageUtilsMock.when(() -> OBMessageUtils.messageBD(MESSAGE_BD_KEY))
+                .thenReturn(DEFAULT_VERSION_EXISTS_MESSAGE);
 
             validator = new ValidateDefaultValueInAppVersion() {
                 @Override
@@ -347,7 +372,7 @@ public class ValidateDefaultValueInAppVersionTest {
             };
 
             Exception exception = assertThrows(OBException.class, () -> validator.onUpdate(updateEvent));
-            assertEquals("Another default version exists", exception.getMessage());
+            assertEquals(DEFAULT_VERSION_EXISTS_MESSAGE, exception.getMessage());
 
             verify(criteria, times(3)).add(any());
             verify(criteria).setMaxResults(1);
@@ -361,7 +386,7 @@ public class ValidateDefaultValueInAppVersionTest {
      * Ensures that no exceptions are thrown and the criteria is queried correctly.
      */
     @Test
-    public void testOnSave_ValidEvent_NoExistingDefault() {
+    public void testOnSaveValidEventNoExistingDefault() {
         when(appVersion.isDefault()).thenReturn(true);
 
         try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {

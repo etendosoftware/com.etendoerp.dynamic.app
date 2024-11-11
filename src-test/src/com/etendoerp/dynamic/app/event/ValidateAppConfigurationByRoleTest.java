@@ -26,6 +26,12 @@ import com.etendoerp.dynamic.app.data.DynamicRoleApp;
 
 import java.lang.reflect.Field;
 
+/**
+ * Unit tests for the {@link ValidateAppConfigurationByRole} class.
+ *
+ * This class verifies that the role-based app configuration is correctly validated
+ * in scenarios where entity update or creation events are triggered.
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class ValidateAppConfigurationByRoleTest {
 
@@ -52,6 +58,13 @@ public class ValidateAppConfigurationByRoleTest {
   @Mock
   private OBCriteria<DynamicRoleApp> criteria;
 
+  /**
+   * Sets up the test environment before each test execution.
+   *
+   * <p>Initializes the {@code validator} instance, configures mock return values
+   * for key methods, and prepares mock objects to simulate the environment needed
+   * for testing role-based app configuration validations.
+   */
   @Before
   public void setUp() {
     validator = new ValidateAppConfigurationByRole();
@@ -91,7 +104,7 @@ public class ValidateAppConfigurationByRoleTest {
    * getTargetInstance is never called.
    */
   @Test
-  public void testOnUpdate_InvalidEvent() {
+  public void testOnUpdateInvalidEvent() {
     ValidateAppConfigurationByRole testValidator = new ValidateAppConfigurationByRole() {
       @Override
       protected boolean isValidEvent(EntityPersistenceEvent event) {
@@ -109,7 +122,7 @@ public class ValidateAppConfigurationByRoleTest {
    * getTargetInstance is never called.
    */
   @Test
-  public void testOnSave_InvalidEvent() {
+  public void testOnSaveInvalidEvent() {
     ValidateAppConfigurationByRole testValidator = new ValidateAppConfigurationByRole() {
       @Override
       protected boolean isValidEvent(EntityPersistenceEvent event) {
@@ -127,7 +140,7 @@ public class ValidateAppConfigurationByRoleTest {
    * with the expected message.
    */
   @Test
-  public void testOnSave_WithExistingRecord() {
+  public void testOnSaveWithExistingRecord() {
     try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class);
          MockedStatic<OBMessageUtils> messageUtilsMock = mockStatic(OBMessageUtils.class)) {
 
@@ -159,7 +172,7 @@ public class ValidateAppConfigurationByRoleTest {
    * and verifies that the criteria is correctly queried without throwing exceptions.
    */
   @Test
-  public void testOnUpdate_WithNoExistingRecord() {
+  public void testOnUpdateWithNoExistingRecord() {
     try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
       when(updateEvent.getTargetInstance()).thenReturn(roleApp);
       obDalMock.when(OBDal::getInstance).thenReturn(obDal);
@@ -186,7 +199,7 @@ public class ValidateAppConfigurationByRoleTest {
    * and verifies that the criteria is correctly queried without throwing exceptions.
    */
   @Test
-  public void testOnSave_WithNoExistingRecord() {
+  public void testOnSaveWithNoExistingRecord() {
     try (MockedStatic<OBDal> obDalMock = mockStatic(OBDal.class)) {
       when(newEvent.getTargetInstance()).thenReturn(roleApp);
       obDalMock.when(OBDal::getInstance).thenReturn(obDal);
