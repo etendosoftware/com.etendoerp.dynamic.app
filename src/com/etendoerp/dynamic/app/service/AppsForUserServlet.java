@@ -64,10 +64,10 @@ public class AppsForUserServlet extends BaseWebService {
         roleAppJson.put("id", roleApp.getId());
         roleAppJson.put("etdappApp", roleApp.getEtdappApp().getId());
         roleAppJson.put("etdappAppName", roleApp.getEtdappApp().getName());
-        DynamicAppVersion version = roleApp.getEtdappAppVersion() != null ? roleApp.getEtdappAppVersion() : getVersionDefault(
-            roleApp.getEtdappApp());
+        DynamicAppVersion version = roleApp.getEtdappAppVersion() != null ? roleApp.getEtdappAppVersion() : getVersionDefault(roleApp.getEtdappApp());
         roleAppJson.put("etdappAppVersion", version.getId());
         roleAppJson.put("etdappAppVersionName", version.getName());
+        roleAppJson.put("etdappShareEnabled", version.isReceiveExternalFiles());
         if (version.isDevelopment()) {
           roleAppJson.put("etdappAppVersionIsDev", version.isDevelopment());
         }
