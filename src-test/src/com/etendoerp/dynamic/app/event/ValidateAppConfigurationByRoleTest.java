@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import org.hibernate.criterion.Criterion;
+import org.openbravo.dal.service.Restriction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,7 +177,7 @@ public class ValidateAppConfigurationByRoleTest {
       when(updateEvent.getTargetInstance()).thenReturn(roleApp);
       obDalMock.when(OBDal::getInstance).thenReturn(obDal);
       when(obDal.createCriteria(DynamicRoleApp.class)).thenReturn(criteria);
-      when(criteria.add(any(Criterion.class))).thenReturn(criteria);
+      when(criteria.add(any(Restriction.class))).thenReturn(criteria);
       when(criteria.setMaxResults(anyInt())).thenReturn(criteria);
       when(criteria.uniqueResult()).thenReturn(null);
 
@@ -204,7 +204,7 @@ public class ValidateAppConfigurationByRoleTest {
       when(newEvent.getTargetInstance()).thenReturn(roleApp);
       obDalMock.when(OBDal::getInstance).thenReturn(obDal);
       when(obDal.createCriteria(DynamicRoleApp.class)).thenReturn(criteria);
-      when(criteria.add(any(Criterion.class))).thenReturn(criteria);
+      when(criteria.add(any(Restriction.class))).thenReturn(criteria);
       when(criteria.setMaxResults(anyInt())).thenReturn(criteria);
       when(criteria.uniqueResult()).thenReturn(null);
 

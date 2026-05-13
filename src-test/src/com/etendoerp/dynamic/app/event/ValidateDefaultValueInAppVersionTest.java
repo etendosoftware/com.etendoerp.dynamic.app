@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.hibernate.criterion.Criterion;
+import org.openbravo.dal.service.Restriction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -242,10 +242,10 @@ public class ValidateDefaultValueInAppVersionTest {
             method.setAccessible(true);
             method.invoke(validator, appVersion);
 
-            ArgumentCaptor<Criterion> criterionCaptor = ArgumentCaptor.forClass(Criterion.class);
+            ArgumentCaptor<Restriction> criterionCaptor = ArgumentCaptor.forClass(Restriction.class);
             verify(criteria, times(3)).add(criterionCaptor.capture());
 
-            List<Criterion> capturedCriteria = criterionCaptor.getAllValues();
+            List<Restriction> capturedCriteria = criterionCaptor.getAllValues();
             assertEquals(3, capturedCriteria.size());
         }
     }
